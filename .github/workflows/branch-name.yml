@@ -1,0 +1,43 @@
+name: Branch name policy
+
+# Only branches named feature/<something> may be merged into the protected
+# branches. Make the "Require feature/* branch name" check required in the
+# branch protection settings so GitHub blocks the merge when it fails.
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+
+permissions:
+  contents: read
+
+jobs:
+  check-branch-name:
+    name: Require feature/* branch name
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Validate the source branch name
+        env:
+          # Passed through the environment, never inlined in the script,
+          # because branch names are controlled by whoever opens the PR.
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+
+          pattern='^feature/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$'
+
+          if [[ "$HEAD_REF" =~ $pattern ]]; then
+            echo "OK: '$HEAD_REF' may be merged into '$BASE_REF'."
+          else
+            echo "::error title=Invalid branch name::Branch '$HEAD_REF' cannot be merged into '$BASE_REF'. Only branches named feature/<short-description> are allowed, for example feature/add-leave-filter."
+            exit 1
+          fi
