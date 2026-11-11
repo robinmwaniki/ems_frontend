@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { meApi } from '@/api/me'
 import PageHeader from '@/components/PageHeader'
@@ -39,11 +38,23 @@ const initialForm: ProfileForm = {
     phoneNumber: '',
 }
 
+// Builds the editable form values from the profile returned by the API.
+function toForm(profile: MyProfile): ProfileForm {
+    return {
+        firstName: profile.firstName ?? '',
+        lastName: profile.lastName ?? '',
+        email: profile.email ?? '',
+        phoneNumber: profile.phoneNumber ?? '',
+    }
+}
+
 export default function MyProfilePage() {
     const qc = useQueryClient()
 
     const [editing, setEditing] = useState(false)
-    const [form, setForm] = useState<ProfileForm>(initialForm)
+
+    // Unsaved edits made by the user. null means there are no edits yet.
+    const [draft, setDraft] = useState<ProfileForm | null>(null)
 
     // Retrieve the employee's profile.
     const {
@@ -56,17 +67,10 @@ export default function MyProfilePage() {
             (await meApi.profile()) as unknown as MyProfile,
     })
 
-    // Populate the form when profile data becomes available.
-    useEffect(() => {
-        if (profile) {
-            setForm({
-                firstName: profile.firstName ?? '',
-                lastName: profile.lastName ?? '',
-                email: profile.email ?? '',
-                phoneNumber: profile.phoneNumber ?? '',
-            })
-        }
-    }, [profile])
+    // The form shows the user's edits, or the saved profile until they edit.
+    // Deriving it during render avoids setting state inside an effect.
+    const form: ProfileForm =
+        draft ?? (profile ? toForm(profile) : initialForm)
 
     // Update profile mutation.
     const updateMutation = useMutation({
@@ -79,6 +83,7 @@ export default function MyProfilePage() {
                 queryKey: ['me-profile'],
             })
 
+            setDraft(null)
             setEditing(false)
         },
 
@@ -370,10 +375,10 @@ export default function MyProfilePage() {
                                         required
                                         value={form.firstName}
                                         onChange={(e) =>
-                                            setForm((f) => ({
-                                                ...f,
+                                            setDraft({
+                                                ...form,
                                                 firstName: e.target.value,
-                                            }))
+                                            })
                                         }
                                         style={inputStyle}
                                     />
@@ -395,10 +400,10 @@ export default function MyProfilePage() {
                                         required
                                         value={form.lastName}
                                         onChange={(e) =>
-                                            setForm((f) => ({
-                                                ...f,
+                                            setDraft({
+                                                ...form,
                                                 lastName: e.target.value,
-                                            }))
+                                            })
                                         }
                                         style={inputStyle}
                                     />
@@ -422,10 +427,10 @@ export default function MyProfilePage() {
                                     type="email"
                                     value={form.email}
                                     onChange={(e) =>
-                                        setForm((f) => ({
-                                            ...f,
+                                        setDraft({
+                                            ...form,
                                             email: e.target.value,
-                                        }))
+                                        })
                                     }
                                     style={inputStyle}
                                 />
@@ -447,10 +452,10 @@ export default function MyProfilePage() {
                                     required
                                     value={form.phoneNumber}
                                     onChange={(e) =>
-                                        setForm((f) => ({
-                                            ...f,
+                                        setDraft({
+                                            ...form,
                                             phoneNumber: e.target.value,
-                                        }))
+                                        })
                                     }
                                     style={inputStyle}
                                 />
@@ -475,14 +480,7 @@ export default function MyProfilePage() {
                                     type="button"
                                     variant="secondary"
                                     onClick={() => {
-                                        setForm({
-                                            firstName: profile.firstName ?? '',
-                                            lastName: profile.lastName ?? '',
-                                            email: profile.email ?? '',
-                                            phoneNumber:
-                                                profile.phoneNumber ?? '',
-                                        })
-
+                                        setDraft(null)
                                         setEditing(false)
                                     }}
                                 >
