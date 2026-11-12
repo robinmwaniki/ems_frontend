@@ -1,13 +1,16 @@
 name: Branch name policy
 
-# Only branches named feature/<something> may be merged into the protected
-# branches. Make the "Require feature/* branch name" check required in the
-# branch protection settings so GitHub blocks the merge when it fails.
+# Branch flow:
+#   feature/<name>  ->  develop  ->  main
+# - Pull requests into develop must come from a feature/<name> branch.
+# - Pull requests into main must come from develop.
+# Mark "Enforce branch flow" as a required status check in the rulesets so
+# GitHub blocks the merge when this check fails.
 on:
   pull_request:
     branches:
+      - develop
       - main
-      - master
     types:
       - opened
       - reopened
@@ -18,13 +21,13 @@ permissions:
   contents: read
 
 jobs:
-  check-branch-name:
-    name: Require feature/* branch name
+  check-branch-flow:
+    name: Enforce branch flow
     runs-on: ubuntu-latest
     timeout-minutes: 2
 
     steps:
-      - name: Validate the source branch name
+      - name: Validate source and target branches
         env:
           # Passed through the environment, never inlined in the script,
           # because branch names are controlled by whoever opens the PR.
@@ -33,11 +36,27 @@ jobs:
         run: |
           set -euo pipefail
 
-          pattern='^feature/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$'
+          feature_pattern='^feature/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$'
 
-          if [[ "$HEAD_REF" =~ $pattern ]]; then
-            echo "OK: '$HEAD_REF' may be merged into '$BASE_REF'."
-          else
-            echo "::error title=Invalid branch name::Branch '$HEAD_REF' cannot be merged into '$BASE_REF'. Only branches named feature/<short-description> are allowed, for example feature/add-leave-filter."
-            exit 1
-          fi
+          case "$BASE_REF" in
+            develop)
+              if [[ "$HEAD_REF" =~ $feature_pattern ]]; then
+                echo "OK: '$HEAD_REF' may be merged into develop."
+              else
+                echo "::error title=Invalid branch name::Branch '$HEAD_REF' cannot be merged into develop. Create your branch from develop and name it feature/<short-description>, for example feature/add-leave-filter."
+                exit 1
+              fi
+              ;;
+            main)
+              if [[ "$HEAD_REF" == "develop" ]]; then
+                echo "OK: develop may be promoted to main."
+              else
+                echo "::error title=Only develop can be merged into main::Branch '$HEAD_REF' cannot be merged into main. Open your pull request against develop instead."
+                exit 1
+              fi
+              ;;
+            *)
+              echo "::error::Unexpected target branch '$BASE_REF'."
+              exit 1
+              ;;
+          esac
