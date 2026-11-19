@@ -41,12 +41,15 @@ jobs:
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
           VITE_APP_RELEASE: ${{ github.sha }}
       - name: Upload production source maps to Sentry
-        if: ${{ secrets.SENTRY_AUTH_TOKEN != '' && secrets.SENTRY_ORG != '' && secrets.SENTRY_PROJECT != '' }}
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
+          if [[ -z "$SENTRY_AUTH_TOKEN" || -z "$SENTRY_ORG" || -z "$SENTRY_PROJECT" ]]; then
+            echo "Sentry source-map upload skipped; configure SENTRY_AUTH_TOKEN, SENTRY_ORG, and SENTRY_PROJECT to enable it."
+            exit 0
+          fi
           npx --yes @sentry/cli sourcemaps inject dist
           npx --yes @sentry/cli sourcemaps upload --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" --release "$GITHUB_SHA" dist
       - name: Deploy to Vercel
