@@ -1,0 +1,46 @@
+name: Branch name policy
+
+# Branch flow: feature/<name> -> Develop -> main
+on:
+  pull_request:
+    branches: [Develop, main]
+    types: [opened, reopened, synchronize, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  check-branch-flow:
+    name: Enforce branch flow
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Validate source and target branches
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          feature_pattern='^feature/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$'
+          case "$BASE_REF" in
+            Develop)
+              if [[ "$HEAD_REF" =~ $feature_pattern ]]; then
+                echo "OK: '$HEAD_REF' may be merged into Develop."
+              else
+                echo "::error title=Invalid source branch::Use feature/<short-description> when targeting Develop."
+                exit 1
+              fi
+              ;;
+            main)
+              if [[ "$HEAD_REF" == "Develop" ]]; then
+                echo "OK: Develop may be promoted to main."
+              else
+                echo "::error title=Only Develop can be promoted to main::Open feature work against Develop first."
+                exit 1
+              fi
+              ;;
+            *)
+              echo "::error::Unexpected target branch '$BASE_REF'."
+              exit 1
+              ;;
+          esac
