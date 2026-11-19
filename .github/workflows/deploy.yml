@@ -12,22 +12,32 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
       - uses: actions/checkout@v7
-
       - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
-
       - run: npm ci
-
+      - name: Verify Vercel deployment secrets
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          missing=()
+          [[ -n "$VERCEL_TOKEN" ]] || missing+=(VERCEL_TOKEN)
+          [[ -n "$VERCEL_ORG_ID" ]] || missing+=(VERCEL_ORG_ID)
+          [[ -n "$VERCEL_PROJECT_ID" ]] || missing+=(VERCEL_PROJECT_ID)
+          if (( ${#missing[@]} )); then
+            printf '::error::Missing GitHub Actions secrets: %s. Configure them in Settings > Secrets and variables > Actions.\n' "${missing[*]}"
+            exit 1
+          fi
       - name: Build
         run: npm run build
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
