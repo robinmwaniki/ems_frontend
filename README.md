@@ -174,3 +174,34 @@ No license file is currently declared. Unless a license is added, standard copyr
 ## Maintainer
 
 **Robin Mwaniki** · [GitHub](https://github.com/robinmwaniki)
+
+
+## Privacy-safe error monitoring
+
+The frontend uses the official `@sentry/react` SDK when `VITE_SENTRY_DSN` is configured. If the DSN is empty or absent, monitoring is not initialized and the application runs normally.
+
+Configure these non-secret Vite values in the deployment environment:
+
+~~~dotenv
+VITE_SENTRY_DSN=https://public-key@example.ingest.sentry.io/project-id
+VITE_APP_RELEASE=your-release-id
+~~~
+
+The DSN is a public ingestion identifier, not an authentication secret. Never put a Sentry auth token, API token, or other private credential in a `VITE_` variable.
+
+### Privacy controls
+
+- `sendDefaultPii` is disabled.
+- Request objects, user context, custom tags, extra context, and breadcrumbs are removed before an event is sent.
+- Error messages are scrubbed for email addresses, phone numbers, Kenyan currency amounts, and numeric identifiers.
+- Transaction names are restricted to known application routes; unknown paths are replaced with a generic route label.
+- Session Replay is not enabled. Both replay sample rates are explicitly zero.
+- Error-boundary fallback UI does not display exception messages or employee data.
+
+### Source maps
+
+Production builds generate source maps. To upload them, configure these GitHub Actions secrets: `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT`. The production deploy workflow uploads source maps only when all three are present. The auth token is used only in GitHub Actions and is never exposed to the browser bundle.
+
+### Verification
+
+Set `VITE_SENTRY_DSN` to a test project's DSN, deploy, and trigger a controlled error in a non-production test environment. Confirm the event appears in Sentry without user data, request payloads, tokens, or breadcrumbs.
