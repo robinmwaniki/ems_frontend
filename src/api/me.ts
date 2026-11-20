@@ -25,7 +25,8 @@ export const meApi = {
         })
     },
 
-    photoPath: () => '/api/me/photo',
+    photoPath: (version?: string | null) =>
+        `/api/me/photo${version ? `?v=${encodeURIComponent(version)}` : ''}`,
 
     leave: (page = 0, size = 10) =>
         client

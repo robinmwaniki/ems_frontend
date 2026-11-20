@@ -33,5 +33,6 @@ export const employeesApi = {
         })
     },
 
-    photoPath: (id: number) => `/api/employees/${id}/photo`,
+    photoPath: (id: number, version?: string | null) =>
+        `/api/employees/${id}/photo${version ? `?v=${encodeURIComponent(version)}` : ''}`,
 }

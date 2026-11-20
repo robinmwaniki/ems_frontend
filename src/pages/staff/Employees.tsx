@@ -160,7 +160,7 @@ export default function EmployeesPage() {
                                         >
                                             {emp.profilePhoto ? (
                                                 <ProtectedImage
-                                                    srcPath={employeesApi.photoPath(emp.id)}
+                                                    srcPath={employeesApi.photoPath(emp.id, emp.profilePhoto)}
                                                     alt={`${emp.firstName} ${emp.lastName}`}
                                                     fallback={emp.firstName.charAt(0).toUpperCase()}
                                                     style={{

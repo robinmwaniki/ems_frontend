@@ -228,7 +228,7 @@ export default function MyProfilePage() {
                     >
                         {profile.profilePhoto ? (
                             <ProtectedImage
-                                srcPath={meApi.photoPath()}
+                                srcPath={meApi.photoPath(profile.profilePhoto)}
                                 alt="Profile"
                                 fallback={profile.firstName.charAt(0).toUpperCase()}
                                 style={{
