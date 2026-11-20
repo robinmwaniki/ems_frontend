@@ -14,9 +14,9 @@ permissions:
 
 jobs:
   audit:
-    name: Report npm dependency advisories
+    name: Report and validate npm dependency fixes
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v5
@@ -24,16 +24,16 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - name: Generate advisory report
+      - name: Generate baseline advisory report
         shell: bash
         run: |
           set -euo pipefail
-          npm audit --json > npm-audit.json || audit_exit=$?
+          npm audit --json > npm-audit-before.json || true
           node <<'NODE'
           const fs = require('node:fs');
-          const report = JSON.parse(fs.readFileSync('npm-audit.json', 'utf8'));
+          const report = JSON.parse(fs.readFileSync('npm-audit-before.json', 'utf8'));
           const entries = Object.entries(report.vulnerabilities ?? {});
-          console.log('npm audit summary:', JSON.stringify(report.metadata?.vulnerabilities ?? {}, null, 2));
+          console.log('Baseline npm audit summary:', JSON.stringify(report.metadata?.vulnerabilities ?? {}, null, 2));
           for (const [name, item] of entries) {
             const via = (item.via ?? []).map((entry) =>
               typeof entry === 'string' ? entry : `${entry.title ?? entry.name ?? 'Advisory'} (${entry.url ?? 'no advisory URL'})`
@@ -48,10 +48,28 @@ jobs:
             }));
           }
           NODE
-      - name: Upload machine-readable audit report
+      - name: Apply compatible fixes without major-version overrides
+        run: npm audit fix --package-lock-only
+      - name: Verify fixed dependency tree
+        run: |
+          npm ci
+          npm run test
+          npm run typecheck
+          npm run lint
+          npm run build
+      - name: Generate post-fix advisory report
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm audit --json > npm-audit-after.json || true
+          node -e "const r=require('./npm-audit-after.json'); console.log('Post-fix npm audit summary:', JSON.stringify(r.metadata?.vulnerabilities ?? {}, null, 2));"
+      - name: Upload candidate lockfile and audit reports
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-audit-${{ github.sha }}
-          path: npm-audit.json
+          name: dependency-audit-fix-candidate-${{ github.sha }}
+          path: |
+            package-lock.json
+            npm-audit-before.json
+            npm-audit-after.json
           if-no-files-found: error
           retention-days: 14
