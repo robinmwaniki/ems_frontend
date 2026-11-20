@@ -13,6 +13,7 @@ import Card from '@/components/Card'
 import Table, { Td } from '@/components/Table'
 
 type ReportType = 'employees' | 'payroll' | 'leave' | 'attendance' | 'performance'
+type ReportData = Employee[] | Payroll[] | Leave[] | Attendance[] | PerformanceReview[]
 type Cell = string | number | null
 
 const reportLabels: Record<ReportType, string> = {
@@ -25,9 +26,22 @@ const reportLabels: Record<ReportType, string> = {
 
 export default function ReportsPage() {
     const [report, setReport] = useState<ReportType>('employees')
-    const { data, isLoading, isError } = useQuery({
+    const { data, isLoading, isError } = useQuery<ReportData>({
         queryKey: ['reports', report],
-        queryFn: () => reportsApi[report](),
+        queryFn: async (): Promise<ReportData> => {
+            switch (report) {
+                case 'employees':
+                    return reportsApi.employees()
+                case 'payroll':
+                    return reportsApi.payroll()
+                case 'leave':
+                    return reportsApi.leave()
+                case 'attendance':
+                    return reportsApi.attendance()
+                case 'performance':
+                    return reportsApi.performance()
+            }
+        },
     })
 
     let headers: string[] = []
