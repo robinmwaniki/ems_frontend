@@ -191,11 +191,11 @@ The DSN is a public ingestion identifier, not an authentication secret. Never pu
 
 ### Privacy controls
 
-- The SDK is not configured to send default PII; event payloads are additionally scrubbed before transmission.
-- Request objects, user context, custom tags, extra context, and breadcrumbs are removed before an event is sent.
-- Error messages are scrubbed for email addresses, phone numbers, Kenyan currency amounts, and numeric identifiers.
+- The client does not set a Sentry user identity; request objects, user context, custom tags, extra context, structured log parameters, and breadcrumbs are removed before an event is sent.
+- Error messages and exception values are scrubbed for email addresses, Kenyan phone numbers, currency amounts, numeric identifiers, bearer/basic credentials, JWTs, and sensitive key/value fields such as passwords, employee IDs, payroll, salary, and leave details.
+- Stack-frame local variables and code context are removed; sensitive values in frame paths are redacted.
 - Transaction names are restricted to known application routes; unknown paths are replaced with a generic route label.
-- Session Replay is not enabled. Both replay sample rates are explicitly zero.
+- Tracing, profiling, and Session Replay are disabled by default.
 - Error-boundary fallback UI does not display exception messages or employee data.
 
 ### Source maps
@@ -215,3 +215,12 @@ The repository uses a case-sensitive promotion path:
 - A feature PR must pass dependency installation, tests, TypeScript checks, lint, production build, branch-flow validation, and the Vercel preview checks before merging.
 - Promote `Develop` to `main` only through a dedicated pull request after release-specific integrations and deployment configuration have been verified.
 - Preserve the exact branch capitalization: `Develop` is not the same branch name as `develop`.
+## Production deployment
+
+The production workflow runs only when changes are pushed to `main`. It deploys to Vercel and requires these GitHub Actions secrets:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+The workflow injects the current EMS backend URL (`https://employment-management-system-49la.onrender.com`) as `VITE_API_URL`; update `.github/workflows/ci.yml` and `.github/workflows/deploy.yml` together if the backend URL changes. Sentry's browser DSN and source-map upload credentials are configured separately in the privacy-safe error monitoring section.
