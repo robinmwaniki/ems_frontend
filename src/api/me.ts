@@ -1,4 +1,5 @@
 import { client } from './client'
+import { downloadPdf } from './download'
 import type {
     Attendance,
     Employee,
@@ -57,6 +58,9 @@ export const meApi = {
         client
             .get<Page<Payroll>>('/api/me/payroll', { params: { page, size } })
             .then((r) => r.data),
+
+    downloadPayslip: (id: number) =>
+        downloadPdf(`/api/me/payroll/${id}/payslip`, `Payslip-${id}.pdf`),
 
     notifications: () =>
         client.get<Notification[]>('/api/me/notifications').then((r) => r.data),
