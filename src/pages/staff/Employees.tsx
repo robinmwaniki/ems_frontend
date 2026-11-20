@@ -8,6 +8,7 @@ import Button from '@/components/Button'
 import Table, { Td } from '@/components/Table'
 import Pager from '@/components/Pager'
 import toast from 'react-hot-toast'
+import ProtectedImage from '@/components/ProtectedImage'
 
 export default function EmployeesPage() {
     const qc = useQueryClient()
@@ -158,12 +159,10 @@ export default function EmployeesPage() {
                                             }}
                                         >
                                             {emp.profilePhoto ? (
-                                                <img
-                                                    src={employeesApi.photoUrl(
-                                                        emp.id,
-                                                        emp.profilePhoto,
-                                                    )}
+                                                <ProtectedImage
+                                                    srcPath={employeesApi.photoPath(emp.id)}
                                                     alt={`${emp.firstName} ${emp.lastName}`}
+                                                    fallback={emp.firstName.charAt(0).toUpperCase()}
                                                     style={{
                                                         width: '100%',
                                                         height: '100%',
