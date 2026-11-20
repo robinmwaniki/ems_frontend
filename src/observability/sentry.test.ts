@@ -24,7 +24,10 @@ describe('Sentry initialization', () => {
         expect(Sentry.init).toHaveBeenCalledWith(
             expect.objectContaining({
                 dsn: 'https://public@example.ingest.sentry.io/1',
-                sendDefaultPii: false,\n                tracesSampleRate: 0,\n                profilesSampleRate: 0,\n                maxBreadcrumbs: 0,
+                sendDefaultPii: false,
+                tracesSampleRate: 0,
+                profilesSampleRate: 0,
+                maxBreadcrumbs: 0,
                 replaysSessionSampleRate: 0,
                 replaysOnErrorSampleRate: 0,
                 beforeSend: scrubSentryEvent,
@@ -38,7 +41,13 @@ describe('Sentry event scrubbing', () => {
     it('redacts email, phone, currency, and numeric identifiers', () => {
         expect(
             redactSensitiveText('alice@example.com +254712345678 KES 25,000.00 ID 12345678'),
-        ).toBe('[Filtered] [Filtered] [Filtered] ID [Filtered]')\n    })\n\n    it('redacts credentials, auth headers, employee fields, and payroll values', () => {\n        const text = 'Authorization: Bearer abc.def.ghi cookie=session123 employeeId=123456 salary=KES 85000 password=hunter2';\n        expect(redactSensitiveText(text)).not.toMatch(/abc\\.def\\.ghi|session123|123456|85000|hunter2/);\n        expect(redactSensitiveText(text).match(/\\[Filtered\\]/g)).toHaveLength(6)
+        ).toBe('[Filtered] [Filtered] [Filtered] ID [Filtered]')
+    })
+
+    it('redacts credentials, auth headers, employee fields, and payroll values', () => {
+        const text = 'Authorization: Bearer abc.def.ghi cookie=session123 employeeId=123456 salary=KES 85000 password=hunter2';
+        expect(redactSensitiveText(text)).not.toMatch(/abc\\.def\\.ghi|session123|123456|85000|hunter2/);
+        expect(redactSensitiveText(text).match(/\\[Filtered\\]/g)).toHaveLength(5)
     })
 
     it('removes user, request, context, extras, tags, and breadcrumbs', () => {
@@ -48,7 +57,8 @@ describe('Sentry event scrubbing', () => {
             contexts: { employee: { id: '12345678' } },
             extra: { salary: 100000 },
             tags: { employeeId: '12345678' },
-            breadcrumbs: [{ message: 'opened payroll' }],\n            logentry: { message: 'Employee error', params: ['salary=50000'] },
+            breadcrumbs: [{ message: 'opened payroll' }],
+            logentry: { message: 'Employee error', params: ['salary=50000'] },
             transaction: '/employees/12345678?search=alice@example.com',
             message: 'Failed for alice@example.com',
         } as unknown as Parameters<typeof scrubSentryEvent>[0]
@@ -61,7 +71,8 @@ describe('Sentry event scrubbing', () => {
         expect(result?.contexts).toBeUndefined()
         expect(result?.extra).toBeUndefined()
         expect(result?.tags).toBeUndefined()
-        expect(result?.breadcrumbs).toBeUndefined()\n        expect(result?.logentry?.params).toBeUndefined()
+        expect(result?.breadcrumbs).toBeUndefined()
+        expect(result?.logentry?.params).toBeUndefined()
         expect(result?.transaction).toBe('/[filtered-route]')
         expect(result?.message).toBe('Failed for [Filtered]')
     })
