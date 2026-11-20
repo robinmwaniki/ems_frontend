@@ -1,4 +1,5 @@
 import { client } from './client'
+import { downloadPdf } from './download'
 import type { Page, Payroll } from '@/types/api'
 
 export const payrollApi = {
@@ -18,6 +19,6 @@ export const payrollApi = {
 
     delete: (id: number) => client.delete(`/api/payroll/${id}`),
 
-    payslipUrl: (id: number) =>
-        `${import.meta.env.VITE_API_URL ?? ''}/api/payslips/${id}`,
+    downloadPayslip: (id: number) =>
+        downloadPdf(`/api/payslips/${id}`, `Payslip-${id}.pdf`),
 }
