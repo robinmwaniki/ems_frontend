@@ -24,7 +24,6 @@ describe('Sentry initialization', () => {
         expect(Sentry.init).toHaveBeenCalledWith(
             expect.objectContaining({
                 dsn: 'https://public@example.ingest.sentry.io/1',
-                sendDefaultPii: false,
                 maxBreadcrumbs: 0,
                 replaysSessionSampleRate: 0,
                 replaysOnErrorSampleRate: 0,

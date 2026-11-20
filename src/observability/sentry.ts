@@ -86,7 +86,6 @@ export function initializeSentry(): boolean {
         dsn,
         environment: import.meta.env.MODE,
         release: import.meta.env.VITE_APP_RELEASE || undefined,
-        sendDefaultPii: false,
         maxBreadcrumbs: 0,
         replaysSessionSampleRate: 0,
         replaysOnErrorSampleRate: 0,
