@@ -191,7 +191,7 @@ The DSN is a public ingestion identifier, not an authentication secret. Never pu
 
 ### Privacy controls
 
-- `sendDefaultPii` is disabled.
+- The SDK is not configured to send default PII; event payloads are additionally scrubbed before transmission.
 - Request objects, user context, custom tags, extra context, and breadcrumbs are removed before an event is sent.
 - Error messages are scrubbed for email addresses, phone numbers, Kenyan currency amounts, and numeric identifiers.
 - Transaction names are restricted to known application routes; unknown paths are replaced with a generic route label.
