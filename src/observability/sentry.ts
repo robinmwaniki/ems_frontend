@@ -97,7 +97,7 @@ export function initializeSentry(): boolean {
         environment: import.meta.env.MODE,
         release: import.meta.env.VITE_APP_RELEASE || undefined,
         tracesSampleRate: 0,
-        profilesSampleRate: 0,
+        profileSessionSampleRate: 0,
         maxBreadcrumbs: 0,
         replaysSessionSampleRate: 0,
         replaysOnErrorSampleRate: 0,
