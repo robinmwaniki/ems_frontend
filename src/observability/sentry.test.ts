@@ -25,7 +25,7 @@ describe('Sentry initialization', () => {
             expect.objectContaining({
                 dsn: 'https://public@example.ingest.sentry.io/1',
                 tracesSampleRate: 0,
-                profilesSampleRate: 0,
+                profileSessionSampleRate: 0,
                 maxBreadcrumbs: 0,
                 replaysSessionSampleRate: 0,
                 replaysOnErrorSampleRate: 0,
