@@ -8,8 +8,8 @@ export const leaveApi = {
             .then((r) => r.data),
 
     approve: (id: number) =>
-        client.post<Leave>(`/api/leaves/${id}/approve`).then((r) => r.data),
+        client.put<Leave>(`/api/leaves/${id}/approve`).then((r) => r.data),
 
     reject: (id: number) =>
-        client.post<Leave>(`/api/leaves/${id}/reject`).then((r) => r.data),
+        client.put<Leave>(`/api/leaves/${id}/reject`).then((r) => r.data),
 }
