@@ -9,53 +9,92 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy
+    name: Build, verify and deploy production
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v5
         with:
           node-version: '24'
           cache: npm
-      - run: npm ci
-      - name: Verify Vercel deployment secrets
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify deployment and Sentry secrets
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
           set -euo pipefail
           missing=()
           [[ -n "$VERCEL_TOKEN" ]] || missing+=(VERCEL_TOKEN)
           [[ -n "$VERCEL_ORG_ID" ]] || missing+=(VERCEL_ORG_ID)
           [[ -n "$VERCEL_PROJECT_ID" ]] || missing+=(VERCEL_PROJECT_ID)
+          [[ -n "$VITE_SENTRY_DSN" ]] || missing+=(VITE_SENTRY_DSN)
+          [[ -n "$SENTRY_AUTH_TOKEN" ]] || missing+=(SENTRY_AUTH_TOKEN)
+          [[ -n "$SENTRY_ORG" ]] || missing+=(SENTRY_ORG)
+          [[ -n "$SENTRY_PROJECT" ]] || missing+=(SENTRY_PROJECT)
           if (( ${#missing[@]} )); then
             printf '::error::Missing GitHub Actions secrets: %s. Configure them in Settings > Secrets and variables > Actions.\n' "${missing[*]}"
             exit 1
           fi
-      - name: Build
-        run: npm run build
+          if [[ "$VERCEL_PROJECT_ID" != "prj_SC7efw9ydQkFaz305uXEUXzjOvg9" ]]; then
+            echo "::error::VERCEL_PROJECT_ID must reference the canonical ems_frontend Vercel project. Update the GitHub secret without sharing its value."
+            exit 1
+          fi
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Pull production Vercel settings
         env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel pull --yes --environment=production
+      - name: Build the exact production artifact
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VITE_API_URL: https://employment-management-system-49la.onrender.com
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
           VITE_APP_RELEASE: ${{ github.sha }}
-      - name: Upload production source maps to Sentry
+        run: vercel build --prod
+      - name: Upload source maps for the exact deployment artifact
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         run: |
-          if [[ -z "$SENTRY_AUTH_TOKEN" || -z "$SENTRY_ORG" || -z "$SENTRY_PROJECT" ]]; then
-            echo "Sentry source-map upload skipped; configure SENTRY_AUTH_TOKEN, SENTRY_ORG, and SENTRY_PROJECT to enable it."
-            exit 0
+          set -euo pipefail
+          static_dir=".vercel/output/static"
+          if [[ ! -d "$static_dir" ]]; then
+            echo "::error::Expected Vercel static output directory was not created."
+            exit 1
           fi
-          npx --yes @sentry/cli sourcemaps inject dist
-          npx --yes @sentry/cli sourcemaps upload --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" --release "$GITHUB_SHA" dist
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+          if ! find "$static_dir" -type f -name '*.map' -print -quit | grep -q .; then
+            echo "::error::No source maps were found in the production build output."
+            exit 1
+          fi
+          npx --yes @sentry/cli sourcemaps inject "$static_dir"
+          if ! npx --yes @sentry/cli releases info "$GITHUB_SHA" --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" >/dev/null 2>&1; then
+            npx --yes @sentry/cli releases new "$GITHUB_SHA" --org "$SENTRY_ORG" --project "$SENTRY_PROJECT"
+          fi
+          npx --yes @sentry/cli sourcemaps upload --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" --release "$GITHUB_SHA" "$static_dir"
+      - name: Deploy the verified prebuilt artifact
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel deploy --prebuilt --prod
+      - name: Finalize Sentry release
+        if: success()
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: npx --yes @sentry/cli releases finalize "$GITHUB_SHA" --org "$SENTRY_ORG" --project "$SENTRY_PROJECT"
