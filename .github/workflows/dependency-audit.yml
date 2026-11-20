@@ -48,6 +48,8 @@ jobs:
             }));
           }
           NODE
+      - name: Preserve baseline lockfile for review
+        run: cp package-lock.json package-lock.before.json
       - name: Apply compatible fixes without major-version overrides
         run: npm audit fix --package-lock-only
       - name: Verify fixed dependency tree
@@ -68,6 +70,7 @@ jobs:
         with:
           name: dependency-audit-fix-candidate-${{ github.sha }}
           path: |
+            package-lock.before.json
             package-lock.json
             npm-audit-before.json
             npm-audit-after.json
