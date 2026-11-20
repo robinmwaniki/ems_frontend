@@ -9,6 +9,11 @@ interface Props {
     style?: CSSProperties
 }
 
+interface LoadedImage {
+    path: string
+    objectUrl: string
+}
+
 /**
  * Loads protected images through Axios so the request includes the JWT
  * Authorization header. The temporary object URL is revoked on cleanup.
@@ -19,13 +24,11 @@ export default function ProtectedImage({
     fallback,
     style,
 }: Props) {
-    const [src, setSrc] = useState<string | null>(null)
+    const [loadedImage, setLoadedImage] = useState<LoadedImage | null>(null)
 
     useEffect(() => {
         let active = true
         let objectUrl: string | null = null
-
-        setSrc(null)
 
         client
             .get<Blob>(srcPath, { responseType: 'blob' })
@@ -34,13 +37,13 @@ export default function ProtectedImage({
 
                 if (active) {
                     objectUrl = nextUrl
-                    setSrc(nextUrl)
+                    setLoadedImage({ path: srcPath, objectUrl: nextUrl })
                 } else {
                     window.URL.revokeObjectURL(nextUrl)
                 }
             })
             .catch(() => {
-                if (active) setSrc(null)
+                // Keep the initials fallback when the protected image is unavailable.
             })
 
         return () => {
@@ -48,6 +51,8 @@ export default function ProtectedImage({
             if (objectUrl) window.URL.revokeObjectURL(objectUrl)
         }
     }, [srcPath])
+
+    const src = loadedImage?.path === srcPath ? loadedImage.objectUrl : null
 
     if (!src) {
         return (
