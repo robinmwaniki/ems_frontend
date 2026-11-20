@@ -75,6 +75,7 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VITE_API_URL: https://employment-management-system-49la.onrender.com
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_SENTRY_ENVIRONMENT: preview
           VITE_APP_RELEASE: ${{ github.sha }}-preview
         run: vercel build
 
