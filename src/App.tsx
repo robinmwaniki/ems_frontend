@@ -15,6 +15,10 @@ import LeavePage from '@/pages/staff/Leave'
 import PayrollPage from '@/pages/staff/Payroll'
 import AnnouncementsPage from '@/pages/staff/Announcements'
 import UsersPage from '@/pages/staff/Users'
+import AttendancePage from '@/pages/staff/Attendance'
+import PerformancePage from '@/pages/staff/Performance'
+import ReportsPage from '@/pages/staff/Reports'
+import SystemLogsPage from '@/pages/staff/SystemLogs'
 
 import EmployeeDashboard from '@/pages/employee/Dashboard'
 import MyProfilePage from '@/pages/employee/Profile'
@@ -50,7 +54,11 @@ export default function App() {
           <Route path="/leave" element={<LeavePage />} />
           <Route path="/payroll" element={<PayrollPage />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
+          <Route path="/attendance" element={<AttendancePage />} />
+          <Route path="/performance" element={<PerformancePage />} />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/system-logs" element={<SystemLogsPage />} />
         </Route>
 
         <Route
