@@ -205,3 +205,13 @@ Production builds generate source maps. To upload them, configure these GitHub A
 ### Verification
 
 Set `VITE_SENTRY_DSN` to a test project's DSN, deploy, and trigger a controlled error in a non-production test environment. Confirm the event appears in Sentry without user data, request payloads, tokens, or breadcrumbs.
+## Branch and release workflow
+
+The repository uses a case-sensitive promotion path:
+
+`feature/<short-description>` → `Develop` → `main`
+
+- Open feature pull requests against `Develop`; do not push directly to protected branches.
+- A feature PR must pass dependency installation, tests, TypeScript checks, lint, production build, branch-flow validation, and the Vercel preview checks before merging.
+- Promote `Develop` to `main` only through a dedicated pull request after release-specific integrations and deployment configuration have been verified.
+- Preserve the exact branch capitalization: `Develop` is not the same branch name as `develop`.
