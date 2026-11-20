@@ -65,7 +65,6 @@ export function scrubSentryEvent(event: SentryEvent): SentryEvent | null {
     }
 
     event.transaction = sanitizeTransaction(event.transaction)
-    event.culprit = sanitizeTransaction(event.culprit)
 
     if (event.message) {
         event.message = redactSensitiveText(event.message)
@@ -97,7 +96,6 @@ export function initializeSentry(): boolean {
         dsn,
         environment: import.meta.env.MODE,
         release: import.meta.env.VITE_APP_RELEASE || undefined,
-        sendDefaultPii: false,
         tracesSampleRate: 0,
         profilesSampleRate: 0,
         maxBreadcrumbs: 0,
