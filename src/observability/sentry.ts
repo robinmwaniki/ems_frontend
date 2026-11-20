@@ -4,14 +4,14 @@ type InitOptions = NonNullable<Parameters<typeof Sentry.init>[0]>
 export type SentryEvent = Parameters<NonNullable<InitOptions['beforeSend']>>[0]
 
 const SENSITIVE_TEXT_PATTERNS = [
-    /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi,
-    /(?:\\+?254|0)(?:7|1)\\d{8}\\b/g,
-    /\\b(?:KES|KSh|Ksh)\\s?[\\d,]+(?:\\.\\d{1,2})?\\b/gi,
-    /\\b\\d{5,16}\\b/g,
-    /\\bBearer\\s+[A-Za-z0-9._~+/-]+=*/gi,
-    /\\bBasic\\s+[A-Za-z0-9+/]+=*/gi,
-    /\\beyJ[A-Za-z0-9_-]+\\.eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\b/g,
-    /\\b(authorization|cookie|set-cookie|password|passwd|token|access[_ -]?token|refresh[_ -]?token|secret|api[_ -]?key|employee[_ -]?(?:id|number|no)|staff[_ -]?(?:id|number|no)|national[_ -]?(?:id|idnumber)|payroll|salary|wage|leave[_ -]?(?:reason|details|type)|amount|account[_ -]?(?:number|no)|bank[_ -]?(?:account|number))\\s*[:=]\\s*(?:"[^"]*"|'[^']*'|[^\\s,;]+)/gi,
+    /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+    /(?:\+?254|0)(?:7|1)\d{8}\b/g,
+    /\b(?:KES|KSh|Ksh)\s?[\d,]+(?:\.\d{1,2})?\b/gi,
+    /\b\d{5,16}\b/g,
+    /\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi,
+    /\bBasic\s+[A-Za-z0-9+/]+=*/gi,
+    /\beyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g,
+    /\b(authorization|cookie|set-cookie|password|passwd|token|access[_ -]?token|refresh[_ -]?token|secret|api[_ -]?key|employee[_ -]?(?:id|number|no)|staff[_ -]?(?:id|number|no)|national[_ -]?(?:id|idnumber)|payroll|salary|wage|leave[_ -]?(?:reason|details|type)|amount|account[_ -]?(?:number|no)|bank[_ -]?(?:account|number))\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi,
 ]
 
 const SAFE_ROUTES = new Set([
