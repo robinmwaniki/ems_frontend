@@ -82,6 +82,7 @@ export interface Attendance {
     workingHours: string | null
     late: boolean
     overtime: boolean
+    status?: string
 }
 
 export interface Payroll {

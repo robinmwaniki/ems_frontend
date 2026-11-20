@@ -9,10 +9,14 @@ const nav = [
     { to: '/leave', icon: '✈️', label: 'Leave' },
     { to: '/payroll', icon: '💰', label: 'Payroll' },
     { to: '/announcements', icon: '📣', label: 'Announcements' },
+    { to: '/attendance', icon: '🕒', label: 'Attendance' },
+    { to: '/performance', icon: '📈', label: 'Performance' },
+    { to: '/reports', icon: '📊', label: 'Reports' },
 ]
 
 const adminNav = [
     { to: '/users', icon: '🔐', label: 'Users' },
+    { to: '/system-logs', icon: '📋', label: 'System Logs' },
 ]
 
 export default function StaffLayout() {
