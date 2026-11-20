@@ -45,9 +45,9 @@ describe('Sentry event scrubbing', () => {
     })
 
     it('redacts credentials, auth headers, employee fields, and payroll values', () => {
-        const text = 'Authorization: Bearer abc.def.ghi cookie=session123 employeeId=123456 salary=KES 85000 password=hunter2';
-        expect(redactSensitiveText(text)).not.toMatch(/abc\\.def\\.ghi|session123|123456|85000|hunter2/);
-        expect(redactSensitiveText(text).match(/\\[Filtered\\]/g)).toHaveLength(5)
+        const text = 'Authorization: Bearer abc.def.ghi cookie=session123 employeeId=123456 salary=KES 85000 password=hunter2'
+        expect(redactSensitiveText(text)).not.toMatch(/abc\.def\.ghi|session123|123456|85000|hunter2/);
+        expect(redactSensitiveText(text).match(/\[Filtered\]/g)).toHaveLength(5)
     })
 
     it('removes user, request, context, extras, tags, and breadcrumbs', () => {
