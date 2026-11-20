@@ -94,9 +94,20 @@ export interface Payroll {
     houseAllowance: number
     transportAllowance: number
     bonus: number
+    grossPay: number
+    taxablePay: number
+    nssf: number
+    shif: number
+    housingLevy: number
+    employerNssf: number
+    employerHousingLevy: number
+    pensionContribution: number
+    personalRelief: number
+    insuranceRelief: number
     deductions: number
     tax: number
     netSalary: number
+    residentTaxpayer: boolean
 }
 
 export interface PerformanceReview {

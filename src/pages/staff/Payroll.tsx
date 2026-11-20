@@ -16,7 +16,9 @@ interface PayrollForm {
     transportAllowance: string
     bonus: string
     deductions: string
-    tax: string
+    pensionContribution: string
+    insurancePremium: string
+    residentTaxpayer: boolean
 }
 
 const emptyForm: PayrollForm = {
@@ -26,7 +28,9 @@ const emptyForm: PayrollForm = {
     transportAllowance: '0',
     bonus: '0',
     deductions: '0',
-    tax: '0',
+    pensionContribution: '0',
+    insurancePremium: '0',
+    residentTaxpayer: true,
 }
 
 const inputStyle = {
@@ -61,7 +65,9 @@ export default function PayrollPage() {
         transportAllowance: Number(values.transportAllowance || 0),
         bonus: Number(values.bonus || 0),
         deductions: Number(values.deductions || 0),
-        tax: Number(values.tax || 0),
+        pensionContribution: Number(values.pensionContribution || 0),
+        insurancePremium: Number(values.insurancePremium || 0),
+        residentTaxpayer: values.residentTaxpayer,
     })
 
     const resetForm = () => {
@@ -101,7 +107,9 @@ export default function PayrollPage() {
             transportAllowance: String(record.transportAllowance),
             bonus: String(record.bonus),
             deductions: String(record.deductions),
-            tax: String(record.tax),
+            pensionContribution: String(record.pensionContribution ?? 0),
+            insurancePremium: '0',
+            residentTaxpayer: record.residentTaxpayer ?? true,
         })
         setShowForm(true)
     }
@@ -165,12 +173,20 @@ export default function PayrollPage() {
                                 <input required type="number" min="0" step="0.01" value={form.deductions} onChange={(e) => setForm({ ...form, deductions: e.target.value })} style={inputStyle} />
                             </label>
                             <label>
-                                <span>Tax (KES)</span>
-                                <input required type="number" min="0" step="0.01" value={form.tax} onChange={(e) => setForm({ ...form, tax: e.target.value })} style={inputStyle} />
+                                <span>Voluntary pension contribution (KES)</span>
+                                <input required type="number" min="0" step="0.01" value={form.pensionContribution} onChange={(e) => setForm({ ...form, pensionContribution: e.target.value })} style={inputStyle} />
+                            </label>
+                            <label>
+                                <span>Insurance premiums eligible for relief (KES)</span>
+                                <input required type="number" min="0" step="0.01" value={form.insurancePremium} onChange={(e) => setForm({ ...form, insurancePremium: e.target.value })} style={inputStyle} />
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                                <input type="checkbox" checked={form.residentTaxpayer} onChange={(e) => setForm({ ...form, residentTaxpayer: e.target.checked })} />
+                                Resident taxpayer (eligible for KES 2,400 personal relief)
                             </label>
                         </div>
                         <p style={{ color: 'var(--muted)', fontSize: '.82rem' }}>
-                            Basic salary is taken from the employee record. Net salary is calculated by the backend.
+                            Basic salary is taken from the employee record. PAYE, NSSF, SHIF and Housing Levy are calculated automatically using Kenyan statutory rates for the selected payroll month.
                         </p>
                         <div style={{ display: 'flex', gap: '.5rem' }}>
                             <Button type="submit" disabled={saveMutation.isPending || !employeesData?.content.length}>
@@ -191,12 +207,13 @@ export default function PayrollPage() {
                         <Button onClick={() => refetch()}>Retry</Button>
                     </div>
                 ) : (
-                    <Table head={['Employee', 'Month', 'Basic', 'Net Salary', 'Payslip', 'Actions']} empty="No payroll records.">
+                    <Table head={['Employee', 'Month', 'Gross Pay', 'PAYE', 'Net Salary', 'Payslip', 'Actions']} empty="No payroll records.">
                         {data?.content.map((record) => (
                             <tr key={record.id}>
                                 <Td><span style={{ fontWeight: 600 }}>{record.employeeName}</span></Td>
                                 <Td>{record.payrollMonth}</Td>
-                                <Td>{fmt(record.basicSalary)}</Td>
+                                <Td>{fmt(record.grossPay)}</Td>
+                                <Td>{fmt(record.tax)}</Td>
                                 <Td><span style={{ fontWeight: 600, color: '#166534' }}>{fmt(record.netSalary)}</span></Td>
                                 <Td>
                                     <Button size="sm" variant="ghost" onClick={() => payrollApi.downloadPayslip(record.id).catch(() => undefined)}>

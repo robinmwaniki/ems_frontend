@@ -32,7 +32,7 @@ export default function MyPayrollPage() {
                     <p style={{ padding: '2rem', textAlign: 'center' }}>Loading…</p>
                 ) : (
                     <Table
-                        head={['Month', 'Basic', 'Net Salary', 'Payslip']}
+                        head={['Month', 'Gross Pay', 'Net Salary', 'Payslip']}
                         empty="No payroll records."
                     >
                         {data?.content.map((p) => (
@@ -40,7 +40,7 @@ export default function MyPayrollPage() {
                                 <Td>
                                     <span style={{ fontWeight: 600 }}>{p.payrollMonth}</span>
                                 </Td>
-                                <Td>{fmt(p.basicSalary)}</Td>
+                                <Td>{fmt(p.grossPay)}</Td>
                                 <Td>
                                     <span style={{ fontWeight: 600, color: '#166534' }}>
                                         {fmt(p.netSalary)}

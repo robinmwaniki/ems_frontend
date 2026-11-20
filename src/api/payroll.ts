@@ -9,7 +9,9 @@ export interface PayrollRequest {
     transportAllowance: number
     bonus: number
     deductions: number
-    tax: number
+    pensionContribution: number
+    insurancePremium: number
+    residentTaxpayer: boolean
 }
 
 export const payrollApi = {
