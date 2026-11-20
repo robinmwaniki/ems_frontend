@@ -5,9 +5,13 @@ export type SentryEvent = Parameters<NonNullable<InitOptions['beforeSend']>>[0]
 
 const SENSITIVE_TEXT_PATTERNS = [
     /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
-    /(?:\+?254|0)7\d{8}\b/g,
-    /\bKES\s?[\d,]+(?:\.\d{1,2})?\b/gi,
-    /\b\d{7,12}\b/g,
+    /(?:\+?254|0)(?:7|1)\d{8}\b/g,
+    /\b(?:KES|KSh|Ksh)\s?[\d,]+(?:\.\d{1,2})?\b/gi,
+    /\b\d{5,16}\b/g,
+    /\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi,
+    /\bBasic\s+[A-Za-z0-9+/]+=*/gi,
+    /\beyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g,
+    /\b(authorization|cookie|set-cookie|password|passwd|token|access[_ -]?token|refresh[_ -]?token|secret|api[_ -]?key|employee[_ -]?(?:id|number|no)|staff[_ -]?(?:id|number|no)|national[_ -]?(?:id|idnumber)|payroll|salary|wage|leave[_ -]?(?:reason|details|type)|amount|account[_ -]?(?:number|no)|bank[_ -]?(?:account|number))\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi,
 ]
 
 const SAFE_ROUTES = new Set([
@@ -43,7 +47,7 @@ function sanitizeTransaction(value: string | undefined): string | undefined {
 }
 
 export function scrubSentryEvent(event: SentryEvent): SentryEvent | null {
-    // Do not transmit any request, identity, arbitrary context, or breadcrumb data.
+    // Do not transmit identity, request payloads, arbitrary context, or breadcrumbs.
     delete event.user
     delete event.request
     delete event.extra
@@ -52,14 +56,18 @@ export function scrubSentryEvent(event: SentryEvent): SentryEvent | null {
     delete event.tags
     delete event.fingerprint
 
+    // Log parameters can contain serialized form values even when the message is safe.
+    if (event.logentry) {
+        delete event.logentry.params
+        if (event.logentry.message) {
+            event.logentry.message = redactSensitiveText(event.logentry.message)
+        }
+    }
+
     event.transaction = sanitizeTransaction(event.transaction)
 
     if (event.message) {
         event.message = redactSensitiveText(event.message)
-    }
-
-    if (event.logentry?.message) {
-        event.logentry.message = redactSensitiveText(event.logentry.message)
     }
 
     event.exception?.values?.forEach((exception) => {
@@ -71,6 +79,8 @@ export function scrubSentryEvent(event: SentryEvent): SentryEvent | null {
             delete frame.vars
             delete frame.pre_context
             delete frame.post_context
+            if (frame.filename) frame.filename = redactSensitiveText(frame.filename)
+            if (frame.abs_path) frame.abs_path = redactSensitiveText(frame.abs_path)
         })
     })
 
@@ -86,6 +96,8 @@ export function initializeSentry(): boolean {
         dsn,
         environment: import.meta.env.MODE,
         release: import.meta.env.VITE_APP_RELEASE || undefined,
+        tracesSampleRate: 0,
+        profileSessionSampleRate: 0,
         maxBreadcrumbs: 0,
         replaysSessionSampleRate: 0,
         replaysOnErrorSampleRate: 0,
