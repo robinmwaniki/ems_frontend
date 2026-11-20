@@ -128,6 +128,7 @@ export interface Notification {
 
 export interface User {
     id: number
+    employeeId?: number
     username: string
     employeeName: string | null
     role: Role
