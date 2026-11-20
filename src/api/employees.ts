@@ -33,6 +33,6 @@ export const employeesApi = {
         })
     },
 
-    photoUrl: (id: number, version?: string | null) =>
-        `${import.meta.env.VITE_API_URL ?? ''}/api/employees/${id}/photo${version ? `?v=${version}` : ''}`,
+    photoPath: (id: number, version?: string | null) =>
+        `/api/employees/${id}/photo${version ? `?v=${encodeURIComponent(version)}` : ''}`,
 }

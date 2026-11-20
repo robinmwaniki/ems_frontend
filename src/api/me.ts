@@ -25,8 +25,8 @@ export const meApi = {
         })
     },
 
-    photoUrl: () =>
-        `${import.meta.env.VITE_API_URL ?? ''}/api/me/photo`,
+    photoPath: (version?: string | null) =>
+        `/api/me/photo${version ? `?v=${encodeURIComponent(version)}` : ''}`,
 
     leave: (page = 0, size = 10) =>
         client
