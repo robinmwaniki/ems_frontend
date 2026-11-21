@@ -20,7 +20,6 @@ client.interceptors.request.use(
         // The demo backend independently rejects write operations as well.
         if (DEMO_MODE && !['get', 'head', 'options'].includes(method) && !isDemoLogin) {
             const message = 'This action is disabled in the public demo.'
-            toast.error(message)
             return Promise.reject(new Error(message))
         }
 
