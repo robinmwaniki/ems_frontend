@@ -11,6 +11,7 @@ const nav = [
     { to:'/leave', icon:'◷', label:'Leave' },
     { to:'/payroll', icon:'KSh', label:'Payroll' },
     { to:'/announcements', icon:'◉', label:'Announcements' },
+    { to:'/notifications', icon:'♢', label:'Notifications' },
     { to:'/attendance', icon:'◷', label:'Attendance' },
     { to:'/performance', icon:'↗', label:'Performance' },
     { to:'/reports', icon:'▥', label:'Reports' },
