@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { meApi } from '@/api/me'
+import ProtectedImage from '@/components/ProtectedImage'
 import PageHeader from '@/components/PageHeader'
 import Card from '@/components/Card'
 import Button from '@/components/Button'
@@ -226,9 +227,10 @@ export default function MyProfilePage() {
                         }}
                     >
                         {profile.profilePhoto ? (
-                            <img
-                                src={meApi.photoUrl()}
+                            <ProtectedImage
+                                srcPath={meApi.photoPath(profile.profilePhoto)}
                                 alt="Profile"
+                                fallback={profile.firstName.charAt(0).toUpperCase()}
                                 style={{
                                     width: '100%',
                                     height: '100%',

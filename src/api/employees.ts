@@ -2,12 +2,17 @@ import { client } from './client'
 import type { Employee, Page } from '@/types/api'
 
 export const employeesApi = {
-    list: (page = 0, size = 10, keyword?: string) =>
-        client
-            .get<Page<Employee>>('/api/employees', {
-                params: { page, size, ...(keyword ? { keyword } : {}) },
-            })
-            .then((r) => r.data),
+    list: (page = 0, size = 10, keyword?: string) => {
+        const params = { page, size }
+
+        const request = keyword
+            ? client.get<Page<Employee>>('/api/employees/search', {
+                  params: { ...params, keyword },
+              })
+            : client.get<Page<Employee>>('/api/employees', { params })
+
+        return request.then((r) => r.data)
+    },
 
     get: (id: number) =>
         client.get<Employee>(`/api/employees/${id}`).then((r) => r.data),
@@ -28,6 +33,6 @@ export const employeesApi = {
         })
     },
 
-    photoUrl: (id: number, version?: string | null) =>
-        `${import.meta.env.VITE_API_URL ?? ''}/photos/employee/${id}${version ? `?v=${version}` : ''}`,
+    photoPath: (id: number, version?: string | null) =>
+        `/api/employees/${id}/photo${version ? `?v=${encodeURIComponent(version)}` : ''}`,
 }

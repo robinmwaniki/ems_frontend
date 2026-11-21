@@ -174,3 +174,76 @@ No license file is currently declared. Unless a license is added, standard copyr
 ## Maintainer
 
 **Robin Mwaniki** · [GitHub](https://github.com/robinmwaniki)
+
+
+## Privacy-safe error monitoring
+
+The frontend uses the official `@sentry/react` SDK when `VITE_SENTRY_DSN` is configured. If the DSN is empty or absent, monitoring is not initialized and the application runs normally.
+
+Configure these non-secret Vite values in the deployment environment:
+
+~~~dotenv
+VITE_SENTRY_DSN=https://public-key@example.ingest.sentry.io/project-id
+VITE_APP_RELEASE=your-release-id
+~~~
+
+The DSN is a public ingestion identifier, not an authentication secret. Never put a Sentry auth token, API token, or other private credential in a `VITE_` variable.
+
+### Privacy controls
+
+- The client does not set a Sentry user identity; request objects, user context, custom tags, extra context, structured log parameters, and breadcrumbs are removed before an event is sent.
+- Error messages and exception values are scrubbed for email addresses, Kenyan phone numbers, currency amounts, numeric identifiers, bearer/basic credentials, JWTs, and sensitive key/value fields such as passwords, employee IDs, payroll, salary, and leave details.
+- Stack-frame local variables and code context are removed; sensitive values in frame paths are redacted.
+- Transaction names are restricted to known application routes; unknown paths are replaced with a generic route label.
+- Tracing, profiling, and Session Replay are disabled by default.
+- Error-boundary fallback UI does not display exception messages or employee data.
+
+### Source maps
+
+Production builds generate source maps. To upload them, configure these GitHub Actions secrets: `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT`. The production deploy workflow uploads source maps only when all three are present. The auth token is used only in GitHub Actions and is never exposed to the browser bundle.
+
+### Verification
+
+Set `VITE_SENTRY_DSN` to a test project's DSN, deploy, and trigger a controlled error in a non-production test environment. Confirm the event appears in Sentry without user data, request payloads, tokens, or breadcrumbs.
+## Branch and release workflow
+
+The repository uses a case-sensitive promotion path:
+
+`feature/<short-description>` → `Develop` → `main`
+
+- Open feature pull requests against `Develop`; do not push directly to protected branches.
+- A feature PR must pass dependency installation, tests, TypeScript checks, lint, production build, branch-flow validation, dependency audit, and lockfile review before merging.
+- Promote `Develop` to `main` only through a dedicated pull request after release-specific integrations and deployment configuration have been verified.
+- Preserve the exact branch capitalization: `Develop` is not the same branch name as `develop`.
+## Production deployment
+
+The active frontend hosting service is a Render static site. It currently builds from the case-sensitive `Develop` branch using `npm ci && npm run build` and publishes the `dist` directory. Render performs the deployment when the configured branch receives a new commit; no Vercel production deployment is part of the active hosting path.
+
+Configure these non-secret build environment values in the Render dashboard:
+
+- `VITE_API_URL`: the currently approved EMS backend API origin.
+- `VITE_SENTRY_DSN`: optional public DSN for the dedicated Sentry project.
+- `VITE_SENTRY_ENVIRONMENT`: optional environment label.
+- `VITE_APP_RELEASE`: optional release identifier.
+
+Do not set `VITE_DEMO_MODE=true` on the normal production frontend. The isolated demo must use a separately configured frontend service and its own demo API origin. Keep private Sentry source-map upload credentials in GitHub Actions secrets only; never expose them through `VITE_` variables.
+
+The backend currently deploys separately from its `master` branch. Verify the Render service's configured branch and build settings in the Render dashboard before changing branch strategy or promoting a release.
+
+
+## Isolated public demo
+
+The public demo is a separate, read-only deployment. It must use a dedicated backend/gateway and a separate database containing synthetic records only. Do not point the demo build at the production API or production database.
+
+For the demo frontend build, set:
+
+~~~dotenv
+VITE_DEMO_MODE=true
+VITE_DEMO_API_URL=https://your-dedicated-demo-api.example.com
+~~~
+
+`VITE_DEMO_API_URL` must be an absolute HTTP(S) origin. If it is missing or invalid, demo login is disabled and the frontend deliberately does not fall back to `VITE_API_URL`. The role selector requests a short-lived demo token from `POST /api/demo/login?role=ADMIN|HR_MANAGER|EMPLOYEE`; no demo passwords or tokens are bundled in the frontend.
+
+For normal production builds, leave `VITE_DEMO_MODE` unset or set it to `false`. The existing `VITE_API_URL` behavior and regular username/password sign-in remain unchanged. Do not enable demo mode on the production frontend service.
+
+The demo backend must independently enforce read-only access, use its own JWT secret, apply rate limits, and allow CORS only from the demo frontend origin. Frontend restrictions are defense in depth, not a replacement for backend authorization.

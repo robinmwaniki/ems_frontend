@@ -1,4 +1,5 @@
 import { client } from './client'
+import { downloadPdf } from './download'
 import type {
     Attendance,
     Employee,
@@ -24,8 +25,8 @@ export const meApi = {
         })
     },
 
-    photoUrl: () =>
-        `${import.meta.env.VITE_API_URL ?? ''}/api/me/photo`,
+    photoPath: (version?: string | null) =>
+        `/api/me/photo${version ? `?v=${encodeURIComponent(version)}` : ''}`,
 
     leave: (page = 0, size = 10) =>
         client
@@ -57,6 +58,9 @@ export const meApi = {
         client
             .get<Page<Payroll>>('/api/me/payroll', { params: { page, size } })
             .then((r) => r.data),
+
+    downloadPayslip: (id: number) =>
+        downloadPdf(`/api/me/payroll/${id}/payslip`, `Payslip-${id}.pdf`),
 
     notifications: () =>
         client.get<Notification[]>('/api/me/notifications').then((r) => r.data),

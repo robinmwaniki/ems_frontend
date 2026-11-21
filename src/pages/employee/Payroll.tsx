@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { meApi } from '@/api/me'
-import { payrollApi } from '@/api/payroll'
 import PageHeader from '@/components/PageHeader'
 import Card from '@/components/Card'
 import Button from '@/components/Button'
@@ -33,7 +32,7 @@ export default function MyPayrollPage() {
                     <p style={{ padding: '2rem', textAlign: 'center' }}>Loading…</p>
                 ) : (
                     <Table
-                        head={['Month', 'Basic', 'Net Salary', 'Payslip']}
+                        head={['Month', 'Gross Pay', 'Net Salary', 'Payslip']}
                         empty="No payroll records."
                     >
                         {data?.content.map((p) => (
@@ -41,22 +40,20 @@ export default function MyPayrollPage() {
                                 <Td>
                                     <span style={{ fontWeight: 600 }}>{p.payrollMonth}</span>
                                 </Td>
-                                <Td>{fmt(p.basicSalary)}</Td>
+                                <Td>{fmt(p.grossPay)}</Td>
                                 <Td>
-                  <span style={{ fontWeight: 600, color: '#166534' }}>
-                    {fmt(p.netSalary)}
-                  </span>
+                                    <span style={{ fontWeight: 600, color: '#166534' }}>
+                                        {fmt(p.netSalary)}
+                                    </span>
                                 </Td>
                                 <Td>
-                                    <a
-                                        href={payrollApi.payslipUrl(p.id)}
-                                        target="_blank"
-                                        rel="noreferrer"
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => meApi.downloadPayslip(p.id).catch(() => undefined)}
                                     >
-                                        <Button size="sm" variant="ghost">
-                                            PDF
-                                        </Button>
-                                    </a>
+                                        PDF
+                                    </Button>
                                 </Td>
                             </tr>
                         ))}

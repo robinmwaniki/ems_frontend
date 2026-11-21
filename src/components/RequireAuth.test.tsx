@@ -75,6 +75,18 @@ describe('RequireAuth', () => {
         expect(screen.queryByText('Protected content')).not.toBeInTheDocument()
     })
 
+    it('sends HR managers away from administrator-only pages', () => {
+        useAuthStore.setState({
+            token: 'abc',
+            user: makeUser('ROLE_HR_MANAGER'),
+        })
+
+        renderProtected(['ROLE_ADMIN'])
+
+        expect(screen.getByText('Staff dashboard')).toBeInTheDocument()
+        expect(screen.queryByText('Protected content')).not.toBeInTheDocument()
+    })
+
     it('sends staff away from an employee-only page', () => {
         useAuthStore.setState({
             token: 'abc',
