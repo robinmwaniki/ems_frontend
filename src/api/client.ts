@@ -1,11 +1,9 @@
-
 import axios from 'axios'
 import toast from 'react-hot-toast'
-
-const BASE_URL = import.meta.env.VITE_API_URL ?? ''
+import { API_BASE_URL, DEMO_MODE } from '@/config/demo'
 
 export const client = axios.create({
-    baseURL: BASE_URL,
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -14,6 +12,17 @@ export const client = axios.create({
 
 client.interceptors.request.use(
     (config) => {
+        const requestUrl = config.url ?? ''
+        const isDemoLogin = /\/api\/demo\/login(?:\?|$)/.test(requestUrl)
+        const method = (config.method ?? 'get').toLowerCase()
+
+        // Enforce read-only behavior in the browser as a second layer.
+        // The demo backend independently rejects write operations as well.
+        if (DEMO_MODE && !['get', 'head', 'options'].includes(method) && !isDemoLogin) {
+            const message = 'This action is disabled in the public demo.'
+            return Promise.reject(new Error(message))
+        }
+
         const token = sessionStorage.getItem('token')
 
         if (token) {
@@ -63,7 +72,7 @@ client.interceptors.response.use(
         }
 
         const requestUrl = error.config?.url ?? ''
-        const isLoginRequest = /\/api\/auth\/login(?:\?|$)/.test(requestUrl)
+        const isLoginRequest = /\/api\/(?:auth\/login|demo\/login)(?:\?|$)/.test(requestUrl)
 
         if (status === 401 && !isLoginRequest) {
             sessionStorage.removeItem('token')
