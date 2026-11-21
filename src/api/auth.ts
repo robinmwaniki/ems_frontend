@@ -1,6 +1,5 @@
-
 import { client } from './client'
-import type { AuthResponse, MeResponse } from '@/types/api'
+import type { AuthResponse, MeResponse, Role } from '@/types/api'
 
 export const authApi = {
     login: async (
@@ -13,6 +12,16 @@ export const authApi = {
                 username,
                 password,
             },
+        )
+
+        return response.data
+    },
+
+    demoLogin: async (role: Role): Promise<AuthResponse> => {
+        const response = await client.post<AuthResponse>(
+            '/api/demo/login',
+            null,
+            { params: { role: role.replace('ROLE_', '') } },
         )
 
         return response.data
