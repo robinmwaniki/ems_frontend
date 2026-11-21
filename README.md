@@ -212,18 +212,23 @@ The repository uses a case-sensitive promotion path:
 `feature/<short-description>` → `Develop` → `main`
 
 - Open feature pull requests against `Develop`; do not push directly to protected branches.
-- A feature PR must pass dependency installation, tests, TypeScript checks, lint, production build, branch-flow validation, and the Vercel preview checks before merging.
+- A feature PR must pass dependency installation, tests, TypeScript checks, lint, production build, branch-flow validation, dependency audit, and lockfile review before merging.
 - Promote `Develop` to `main` only through a dedicated pull request after release-specific integrations and deployment configuration have been verified.
 - Preserve the exact branch capitalization: `Develop` is not the same branch name as `develop`.
 ## Production deployment
 
-The production workflow runs only when changes are pushed to `main`. It deploys to Vercel and requires these GitHub Actions secrets:
+The active frontend hosting service is a Render static site. It currently builds from the case-sensitive `Develop` branch using `npm ci && npm run build` and publishes the `dist` directory. Render performs the deployment when the configured branch receives a new commit; no Vercel production deployment is part of the active hosting path.
 
-- `VERCEL_TOKEN`
-- `VERCEL_ORG_ID`
-- `VERCEL_PROJECT_ID`
+Configure these non-secret build environment values in the Render dashboard:
 
-The workflow injects the current EMS backend URL (`https://employment-management-system-49la.onrender.com`) as `VITE_API_URL`; update `.github/workflows/ci.yml` and `.github/workflows/deploy.yml` together if the backend URL changes. Sentry's browser DSN and source-map upload credentials are configured separately in the privacy-safe error monitoring section.
+- `VITE_API_URL`: the currently approved EMS backend API origin.
+- `VITE_SENTRY_DSN`: optional public DSN for the dedicated Sentry project.
+- `VITE_SENTRY_ENVIRONMENT`: optional environment label.
+- `VITE_APP_RELEASE`: optional release identifier.
+
+Do not set `VITE_DEMO_MODE=true` on the normal production frontend. The isolated demo must use a separately configured frontend service and its own demo API origin. Keep private Sentry source-map upload credentials in GitHub Actions secrets only; never expose them through `VITE_` variables.
+
+The backend currently deploys separately from its `master` branch. Verify the Render service's configured branch and build settings in the Render dashboard before changing branch strategy or promoting a release.
 
 
 ## Isolated public demo
