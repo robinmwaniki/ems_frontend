@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Routes,Route,Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
 import { authApi } from '@/api/auth'
+import DemoExperience from '@/components/DemoExperience'
 import LoginPage from '@/pages/Login'
 import StaffLayout from '@/layouts/StaffLayout'
 import EmployeeLayout from '@/layouts/EmployeeLayout'
@@ -28,10 +29,13 @@ import MyNotificationsPage from '@/pages/employee/Notifications'
 import MyAnnouncementsPage from '@/pages/employee/Announcements'
 import MyPerformancePage from '@/pages/employee/Performance'
 import ChangePasswordPage from '@/pages/employee/ChangePassword'
+
 export default function App(){
  const {token,setAuth,user}=useAuthStore()
  useEffect(()=>{if(token&&!user)authApi.me().then(me=>setAuth(token,me)).catch(()=>{})},[token,user,setAuth])
- return <Routes>
+ return <>
+ <DemoExperience />
+ <Routes>
  <Route path="/login" element={<LoginPage/>}/>
  <Route element={<RequireAuth allowedRoles={['ROLE_ADMIN','ROLE_HR_MANAGER']}><StaffLayout/></RequireAuth>}>
  <Route path="/dashboard" element={<AdminDashboard/>}/><Route path="/employees" element={<EmployeesPage/>}/><Route path="/departments" element={<DepartmentsPage/>}/>
@@ -45,4 +49,5 @@ export default function App(){
  </Route>
  <Route path="/" element={<Navigate to="/login" replace/>}/><Route path="*" element={<Navigate to="/login" replace/>}/>
  </Routes>
+ </>
 }
