@@ -102,7 +102,7 @@ describe('StaffNotificationsPage', () => {
         await user.click(screen.getByRole('button', { name: 'Mark Read' }))
 
         await waitFor(() => {
-            expect(api.markRead).toHaveBeenCalledWith(11)
+            expect(api.markRead.mock.calls[0]?.[0]).toBe(11)
             expect(api.list).toHaveBeenCalledTimes(2)
         })
         expect(screen.getByText('0 unread notifications')).toBeInTheDocument()
