@@ -108,7 +108,7 @@ export default function PayrollPage() {
             bonus: String(record.bonus),
             deductions: String(record.deductions),
             pensionContribution: String(record.pensionContribution ?? 0),
-            insurancePremium: '0',
+            insurancePremium: String(record.insurancePremium ?? 0),
             residentTaxpayer: record.residentTaxpayer ?? true,
         })
         setShowForm(true)
