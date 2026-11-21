@@ -224,3 +224,21 @@ The production workflow runs only when changes are pushed to `main`. It deploys 
 - `VERCEL_PROJECT_ID`
 
 The workflow injects the current EMS backend URL (`https://employment-management-system-49la.onrender.com`) as `VITE_API_URL`; update `.github/workflows/ci.yml` and `.github/workflows/deploy.yml` together if the backend URL changes. Sentry's browser DSN and source-map upload credentials are configured separately in the privacy-safe error monitoring section.
+
+
+## Isolated public demo
+
+The public demo is a separate, read-only deployment. It must use a dedicated backend/gateway and a separate database containing synthetic records only. Do not point the demo build at the production API or production database.
+
+For the demo frontend build, set:
+
+~~~dotenv
+VITE_DEMO_MODE=true
+VITE_DEMO_API_URL=https://your-dedicated-demo-api.example.com
+~~~
+
+`VITE_DEMO_API_URL` must be an absolute HTTP(S) origin. If it is missing or invalid, demo login is disabled and the frontend deliberately does not fall back to `VITE_API_URL`. The role selector requests a short-lived demo token from `POST /api/demo/login?role=ADMIN|HR_MANAGER|EMPLOYEE`; no demo passwords or tokens are bundled in the frontend.
+
+For normal production builds, leave `VITE_DEMO_MODE` unset or set it to `false`. The existing `VITE_API_URL` behavior and regular username/password sign-in remain unchanged. Do not enable demo mode on the production frontend service.
+
+The demo backend must independently enforce read-only access, use its own JWT secret, apply rate limits, and allow CORS only from the demo frontend origin. Frontend restrictions are defense in depth, not a replacement for backend authorization.
