@@ -76,11 +76,39 @@ describe('Sentry event scrubbing', () => {
         expect(result?.message).toBe('Failed for [Filtered]')
     })
 
-    it('preserves known static application routes without query strings', () => {
-        const event = {
-            transaction: '/employee/dashboard?tab=payroll',
-        } as unknown as Parameters<typeof scrubSentryEvent>[0]
+    it('preserves known static application routes without query strings or fragments', () => {
+        const routes = [
+            '/login',
+            '/dashboard',
+            '/employees',
+            '/departments',
+            '/leave',
+            '/payroll',
+            '/announcements',
+            '/notifications',
+            '/attendance',
+            '/performance',
+            '/reports',
+            '/company-profile',
+            '/users',
+            '/system-logs',
+            '/employee/dashboard',
+            '/employee/profile',
+            '/employee/leave',
+            '/employee/attendance',
+            '/employee/payroll',
+            '/employee/notifications',
+            '/employee/announcements',
+            '/employee/performance',
+            '/employee/change-password',
+        ]
 
-        expect(scrubSentryEvent(event)?.transaction).toBe('/employee/dashboard')
+        routes.forEach((route) => {
+            const event = {
+                transaction: `${route}?tab=private#details`,
+            } as unknown as Parameters<typeof scrubSentryEvent>[0]
+
+            expect(scrubSentryEvent(event)?.transaction).toBe(route)
+        })
     })
 })
