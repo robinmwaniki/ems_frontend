@@ -13,6 +13,7 @@ export default function LoginPage() {
     const { setAuth, clearAuth } = useAuthStore()
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const locationState = location.state as LoginLocationState | null
@@ -66,7 +67,19 @@ export default function LoginPage() {
                         </div>
                         <div className={styles.field}>
                             <label htmlFor="password">Password</label>
-                            <input id="password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required disabled={loading} />
+                            <div className={styles.passwordInput}>
+                                <input id="password" name="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required disabled={loading} />
+                                <button
+                                    className={styles.passwordToggle}
+                                    type="button"
+                                    onClick={() => setShowPassword((visible) => !visible)}
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    aria-pressed={showPassword}
+                                    disabled={loading}
+                                >
+                                    {showPassword ? 'Hide' : 'Show'}
+                                </button>
+                            </div>
                         </div>
                         <Button type="submit" disabled={loading} className={styles.submit}>{loading ? 'Signing in…' : 'Sign in'}</Button>
                     </form>
