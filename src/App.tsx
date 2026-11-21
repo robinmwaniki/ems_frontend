@@ -41,7 +41,10 @@ export default function App(){
  <Route path="/dashboard" element={<AdminDashboard/>}/><Route path="/employees" element={<EmployeesPage/>}/><Route path="/departments" element={<DepartmentsPage/>}/>
  <Route path="/leave" element={<LeavePage/>}/><Route path="/payroll" element={<PayrollPage/>}/><Route path="/announcements" element={<AnnouncementsPage/>}/>
  <Route path="/notifications" element={<StaffNotificationsPage/>}/><Route path="/attendance" element={<AttendancePage/>}/><Route path="/performance" element={<PerformancePage/>}/>
- <Route path="/reports" element={<ReportsPage/>}/><Route path="/company-profile" element={<CompanyProfilePage/>}/><Route path="/users" element={<UsersPage/>}/><Route path="/system-logs" element={<SystemLogsPage/>}/>
+ <Route path="/reports" element={<ReportsPage/>}/>
+ <Route path="/company-profile" element={<RequireAuth allowedRoles={['ROLE_ADMIN']}><CompanyProfilePage/></RequireAuth>}/>
+ <Route path="/users" element={<RequireAuth allowedRoles={['ROLE_ADMIN']}><UsersPage/></RequireAuth>}/>
+ <Route path="/system-logs" element={<RequireAuth allowedRoles={['ROLE_ADMIN']}><SystemLogsPage/></RequireAuth>}/>
  </Route>
  <Route element={<RequireAuth allowedRoles={['ROLE_EMPLOYEE','ROLE_ADMIN','ROLE_HR_MANAGER']}><EmployeeLayout/></RequireAuth>}>
  <Route path="/employee/dashboard" element={<EmployeeDashboard/>}/><Route path="/employee/profile" element={<MyProfilePage/>}/><Route path="/employee/leave" element={<MyLeavePage/>}/>
