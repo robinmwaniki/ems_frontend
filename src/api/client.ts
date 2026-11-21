@@ -1,11 +1,9 @@
-
 import axios from 'axios'
 import toast from 'react-hot-toast'
-
-const BASE_URL = import.meta.env.VITE_API_URL ?? ''
+import { API_BASE_URL } from '@/config/demo'
 
 export const client = axios.create({
-    baseURL: BASE_URL,
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -63,7 +61,7 @@ client.interceptors.response.use(
         }
 
         const requestUrl = error.config?.url ?? ''
-        const isLoginRequest = /\/api\/auth\/login(?:\?|$)/.test(requestUrl)
+        const isLoginRequest = /\/api\/(?:auth\/login|demo\/login)(?:\?|$)/.test(requestUrl)
 
         if (status === 401 && !isLoginRequest) {
             sessionStorage.removeItem('token')
