@@ -104,6 +104,7 @@ export interface Payroll {
     pensionContribution: number
     personalRelief: number
     insuranceRelief: number
+    insurancePremium: number
     deductions: number
     tax: number
     netSalary: number
