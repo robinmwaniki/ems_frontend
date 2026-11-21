@@ -11,6 +11,8 @@ const nav = [
     { to:'/employee/attendance', icon:'◷', label:'Attendance' },
     { to:'/employee/payroll', icon:'KSh', label:'My Payroll' },
     { to:'/employee/notifications', icon:'◉', label:'Notifications' },
+    { to:'/employee/announcements', icon:'▤', label:'Announcements' },
+    { to:'/employee/performance', icon:'★', label:'My Performance' },
     { to:'/employee/change-password', icon:'⌑', label:'Change Password' },
 ]
 

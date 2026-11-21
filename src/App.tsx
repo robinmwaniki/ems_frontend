@@ -25,6 +25,8 @@ import MyLeavePage from '@/pages/employee/Leave'
 import MyAttendancePage from '@/pages/employee/Attendance'
 import MyPayrollPage from '@/pages/employee/Payroll'
 import MyNotificationsPage from '@/pages/employee/Notifications'
+import MyAnnouncementsPage from '@/pages/employee/Announcements'
+import MyPerformancePage from '@/pages/employee/Performance'
 import ChangePasswordPage from '@/pages/employee/ChangePassword'
 export default function App(){
  const {token,setAuth,user}=useAuthStore()
@@ -39,7 +41,7 @@ export default function App(){
  </Route>
  <Route element={<RequireAuth allowedRoles={['ROLE_EMPLOYEE','ROLE_ADMIN','ROLE_HR_MANAGER']}><EmployeeLayout/></RequireAuth>}>
  <Route path="/employee/dashboard" element={<EmployeeDashboard/>}/><Route path="/employee/profile" element={<MyProfilePage/>}/><Route path="/employee/leave" element={<MyLeavePage/>}/>
- <Route path="/employee/attendance" element={<MyAttendancePage/>}/><Route path="/employee/payroll" element={<MyPayrollPage/>}/><Route path="/employee/notifications" element={<MyNotificationsPage/>}/><Route path="/employee/change-password" element={<ChangePasswordPage/>}/>
+ <Route path="/employee/attendance" element={<MyAttendancePage/>}/><Route path="/employee/payroll" element={<MyPayrollPage/>}/><Route path="/employee/notifications" element={<MyNotificationsPage/>}/><Route path="/employee/announcements" element={<MyAnnouncementsPage/>}/><Route path="/employee/performance" element={<MyPerformancePage/>}/><Route path="/employee/change-password" element={<ChangePasswordPage/>}/>
  </Route>
  <Route path="/" element={<Navigate to="/login" replace/>}/><Route path="*" element={<Navigate to="/login" replace/>}/>
  </Routes>
