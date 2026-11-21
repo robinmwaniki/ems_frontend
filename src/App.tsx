@@ -14,6 +14,7 @@ import DepartmentsPage from '@/pages/staff/Departments'
 import LeavePage from '@/pages/staff/Leave'
 import PayrollPage from '@/pages/staff/Payroll'
 import AnnouncementsPage from '@/pages/staff/Announcements'
+import StaffNotificationsPage from '@/pages/staff/Notifications'
 import UsersPage from '@/pages/staff/Users'
 import AttendancePage from '@/pages/staff/Attendance'
 import PerformancePage from '@/pages/staff/Performance'
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/leave" element={<LeavePage />} />
           <Route path="/payroll" element={<PayrollPage />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
+          <Route path="/notifications" element={<StaffNotificationsPage />} />
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/performance" element={<PerformancePage />} />
           <Route path="/reports" element={<ReportsPage />} />
