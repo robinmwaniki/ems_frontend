@@ -35,9 +35,11 @@ export const authApi = {
     changePassword: (
         currentPassword: string,
         newPassword: string,
+        confirmPassword: string,
     ) =>
         client.post('/api/auth/change-password', {
             currentPassword,
             newPassword,
+            confirmPassword,
         }),
 }
