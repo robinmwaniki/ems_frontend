@@ -1,21 +1,10 @@
 name: Branch name policy
 
-# Branch flow:
-#   feature/<name>  ->  develop  ->  main
-# - Pull requests into develop must come from a feature/<name> branch.
-# - Pull requests into main must come from develop.
-# Mark "Enforce branch flow" as a required status check in the rulesets so
-# GitHub blocks the merge when this check fails.
+# Branch flow: feature/<name> -> Develop -> main
 on:
   pull_request:
-    branches:
-      - develop
-      - main
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - edited
+    branches: [Develop, main]
+    types: [opened, reopened, synchronize, edited]
 
 permissions:
   contents: read
@@ -25,33 +14,28 @@ jobs:
     name: Enforce branch flow
     runs-on: ubuntu-latest
     timeout-minutes: 2
-
     steps:
       - name: Validate source and target branches
         env:
-          # Passed through the environment, never inlined in the script,
-          # because branch names are controlled by whoever opens the PR.
           HEAD_REF: ${{ github.head_ref }}
           BASE_REF: ${{ github.base_ref }}
         run: |
           set -euo pipefail
-
           feature_pattern='^feature/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$'
-
           case "$BASE_REF" in
-            develop)
+            Develop)
               if [[ "$HEAD_REF" =~ $feature_pattern ]]; then
-                echo "OK: '$HEAD_REF' may be merged into develop."
+                echo "OK: '$HEAD_REF' may be merged into Develop."
               else
-                echo "::error title=Invalid branch name::Branch '$HEAD_REF' cannot be merged into develop. Create your branch from develop and name it feature/<short-description>, for example feature/add-leave-filter."
+                echo "::error title=Invalid source branch::Use feature/<short-description> when targeting Develop."
                 exit 1
               fi
               ;;
             main)
-              if [[ "$HEAD_REF" == "develop" ]]; then
-                echo "OK: develop may be promoted to main."
+              if [[ "$HEAD_REF" == "Develop" ]]; then
+                echo "OK: Develop may be promoted to main."
               else
-                echo "::error title=Only develop can be merged into main::Branch '$HEAD_REF' cannot be merged into main. Open your pull request against develop instead."
+                echo "::error title=Only Develop can be promoted to main::Open feature work against Develop first."
                 exit 1
               fi
               ;;

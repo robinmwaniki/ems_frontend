@@ -1,6 +1,5 @@
-
 import { client } from './client'
-import type { AuthResponse, MeResponse } from '@/types/api'
+import type { AuthResponse, MeResponse, Role } from '@/types/api'
 
 export const authApi = {
     login: async (
@@ -18,17 +17,30 @@ export const authApi = {
         return response.data
     },
 
+    demoLogin: async (role: Role): Promise<AuthResponse> => {
+        const response = await client.post<AuthResponse>(
+            '/api/demo/login',
+            null,
+            { params: { role: role.replace('ROLE_', '') } },
+        )
+
+        return response.data
+    },
+
     me: async (): Promise<MeResponse> => {
         const response = await client.get<MeResponse>('/api/auth/me')
         return response.data
     },
 
+    // The API validates the confirmation independently of the browser.
     changePassword: (
         currentPassword: string,
         newPassword: string,
+        confirmPassword: string,
     ) =>
         client.post('/api/auth/change-password', {
             currentPassword,
             newPassword,
+            confirmPassword,
         }),
 }
