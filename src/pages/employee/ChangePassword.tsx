@@ -29,9 +29,15 @@ export default function ChangePasswordPage() {
         }
         setLoading(true)
         try {
-            await authApi.changePassword(form.currentPassword, form.newPassword)
+            await authApi.changePassword(
+                form.currentPassword,
+                form.newPassword,
+                form.confirm,
+            )
             toast.success('Password updated.')
             setForm({ currentPassword: '', newPassword: '', confirm: '' })
+        } catch {
+            toast.error('Unable to update password. Check your current password and try again.')
         } finally {
             setLoading(false)
         }
@@ -69,6 +75,7 @@ export default function ChangePasswordPage() {
                             required
                             autoComplete="new-password"
                             minLength={10}
+                            maxLength={72}
                             value={form.newPassword}
                             onChange={(e) =>
                                 setForm((f) => ({ ...f, newPassword: e.target.value }))
@@ -76,7 +83,7 @@ export default function ChangePasswordPage() {
                             style={inputStyle}
                         />
                         <p style={{ color: 'var(--muted)', fontSize: '.8rem', margin: '.3rem 0 0' }}>
-                            At least 10 characters, with a letter and a digit.
+                            10–72 characters, with at least one letter and one digit.
                         </p>
                     </div>
                     <div>
@@ -87,6 +94,8 @@ export default function ChangePasswordPage() {
                             type="password"
                             required
                             autoComplete="new-password"
+                            minLength={10}
+                            maxLength={72}
                             value={form.confirm}
                             onChange={(e) =>
                                 setForm((f) => ({ ...f, confirm: e.target.value }))

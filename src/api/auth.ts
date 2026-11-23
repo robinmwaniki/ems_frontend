@@ -32,12 +32,15 @@ export const authApi = {
         return response.data
     },
 
+    // The API validates the confirmation independently of the browser.
     changePassword: (
         currentPassword: string,
         newPassword: string,
+        confirmPassword: string,
     ) =>
         client.post('/api/auth/change-password', {
             currentPassword,
             newPassword,
+            confirmPassword,
         }),
 }
