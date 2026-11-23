@@ -112,3 +112,40 @@ describe('Sentry event scrubbing', () => {
         })
     })
 })
+
+
+describe('Sentry exception privacy', () => {
+    it('redacts exception messages and removes local variables and source context', () => {
+        const event = {
+            exception: {
+                values: [
+                    {
+                        value: 'Failed for alice@example.com with salary=KES 85000',
+                        stacktrace: {
+                            frames: [
+                                {
+                                    filename: '/employees/12345678.ts',
+                                    abs_path: '/app/payroll?account=12345678',
+                                    vars: { employeeId: '12345678', salary: 85000 },
+                                    pre_context: ['salary = 85000'],
+                                    post_context: ['accountNumber = 12345678'],
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        } as unknown as Parameters<typeof scrubSentryEvent>[0]
+
+        const result = scrubSentryEvent(event)
+        const exception = result?.exception?.values?.[0]
+        const frame = exception?.stacktrace?.frames?.[0]
+
+        expect(exception?.value).not.toMatch(/alice@example\.com|85000/)
+        expect(frame?.filename).not.toContain('12345678')
+        expect(frame?.abs_path).not.toContain('12345678')
+        expect(frame?.vars).toBeUndefined()
+        expect(frame?.pre_context).toBeUndefined()
+        expect(frame?.post_context).toBeUndefined()
+    })
+})
